@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Initiative Tracker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 400px;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 48%;
+      padding: 8px;
+      margin: 5px 1%;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #6366f1;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 15px;
+    }
+
+    li {
+      padding: 10px;
+      margin-bottom: 5px;
+      background: #334155;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .active {
+      background: #22c55e !important;
+      color: black;
+    }
+
+    .round {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Initiative Tracker</h1>
+
+    <input id="name" placeholder="Name" />
+    <input id="initiative" type="number" placeholder="Init" />
+    <button onclick="addCharacter()">Add</button>
+
+    <button onclick="startCombat()">Start Combat</button>
+    <button onclick="nextTurn()">Next Turn</button>
+
+    <div class="round">Round: <span id="round">1</span></div>
+
+    <ul id="list"></ul>
+  </div>
+
+  <script>
+    let characters = [];
+    let currentIndex = 0;
+    let round = 1;
+
+    function addCharacter() {
+      const name = document.getElementById('name').value;
+      const initiative = parseInt(document.getElementById('initiative').value);
+
+      if (!name || isNaN(initiative)) return;
+
+      characters.push({ name, initiative });
+      renderList();
+
+      document.getElementById('name').value = '';
+      document.getElementById('initiative').value = '';
+    }
+
+    function startCombat() {
+      characters.sort((a, b) => b.initiative - a.initiative);
+      currentIndex = 0;
+      round = 1;
+      updateRound();
+      renderList();
+    }
+
+    function nextTurn() {
+      if (characters.length === 0) return;
+
+      currentIndex++;
+      if (currentIndex >= characters.length) {
+        currentIndex = 0;
+        round++;
+        updateRound();
+      }
+
+      renderList();
+    }
+
+    function updateRound() {
+      document.getElementById('round').textContent = round;
+    }
+
+    function renderList() {
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+
+      characters.forEach((char, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${char.name} (${char.initiative})`;
+
+        if (index === currentIndex) {
+          li.classList.add('active');
+        }
+
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
