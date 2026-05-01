@@ -15,6 +15,7 @@ li{margin:6px 0;padding:8px;border:1px solid #8b6f3d;border-radius:8px}
 .player{background:#1e3a5f}.enemy{background:#5f1e1e}.boss{background:#5a3d00}
 .active{background:#d4af37!important;color:black}
 .dead{opacity:0.5;text-decoration:line-through}
+.stable{opacity:0.7;font-style:italic}
 .bar{height:8px;background:#333;border-radius:4px;margin-top:4px;overflow:hidden}
 .fill{height:100%;transition:0.3s}
 .saves{font-size:12px;margin-top:4px}
@@ -57,7 +58,7 @@ const maxhp=parseInt(document.getElementById('maxhp').value)||hp;
 const ac=parseInt(document.getElementById('ac').value)||0;
 const type=document.getElementById('type').value;
 if(!name||isNaN(initiative))return;
-characters.push({name,initiative,hp,maxhp,ac,type,success:0,fail:0,dead:false});
+characters.push({name,initiative,hp,maxhp,ac,type,success:0,fail:0,dead:false,stable:false});
 renderList();
 }
 
@@ -83,6 +84,7 @@ c.hp += amt;
 if(c.hp > 0){
   c.success = 0;
   c.fail = 0;
+  c.stable = false;
 }
 
 if(c.hp <= 0){
@@ -98,7 +100,8 @@ function stabilize(i){
 let c = characters[i];
 c.success = 0;
 c.fail = 0;
-c.hp = 1;
+c.hp = 0;
+c.stable = true;
 renderList();
 }
 
@@ -108,7 +111,7 @@ if(success) c.success++;
 else c.fail++;
 
 if(c.success >= 3){
-  c.hp = 1;
+  c.stable = true;
   c.success = 0;
   c.fail = 0;
 }
@@ -132,12 +135,13 @@ characters.forEach((c,i)=>{
 const li=document.createElement('li');
 li.classList.add(c.type);
 if(c.dead) li.classList.add('dead');
+if(c.stable && !c.dead) li.classList.add('stable');
 
 const percent = c.maxhp ? (c.hp / c.maxhp) * 100 : 0;
 const color = getHealthColor(percent);
 
 let deathUI = '';
-if(c.type==='player' && c.hp===0 && !c.dead){
+if(c.type==='player' && c.hp===0 && !c.dead && !c.stable){
   deathUI = `
     <div class='saves'>
       Death Saves ✔ ${c.success} ❌ ${c.fail}<br>
@@ -148,7 +152,9 @@ if(c.type==='player' && c.hp===0 && !c.dead){
   `;
 }
 
-let nameDisplay = c.dead ? `${c.name} (dead)` : c.name;
+let nameDisplay = c.name;
+if(c.dead) nameDisplay += ' (dead)';
+else if(c.stable) nameDisplay += ' (stable)';
 
 li.innerHTML=`
   ${nameDisplay} | ${c.hp}/${c.maxhp} HP | AC:${c.ac}<br>
