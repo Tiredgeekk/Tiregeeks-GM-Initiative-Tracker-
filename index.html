@@ -15,7 +15,7 @@ li{margin:6px 0;padding:8px;border:1px solid #8b6f3d;border-radius:8px}
 .player{background:#1e3a5f}.enemy{background:#5f1e1e}.boss{background:#5a3d00}
 .active{background:#d4af37!important;color:black}
 .bar{height:8px;background:#333;border-radius:4px;margin-top:4px;overflow:hidden}
-.fill{height:100%;background:#4ade80}
+.fill{height:100%;transition:0.3s}
 .saves{font-size:12px;margin-top:4px}
 </style>
 </head>
@@ -81,6 +81,12 @@ else characters[i].fail++;
 renderList();
 }
 
+function getHealthColor(percent){
+if(percent > 60) return '#4ade80'; // green
+if(percent > 30) return '#facc15'; // yellow
+return '#ef4444'; // red
+}
+
 function renderList(){
 const list=document.getElementById('list');list.innerHTML='';
 characters.forEach((c,i)=>{
@@ -88,6 +94,7 @@ const li=document.createElement('li');
 li.classList.add(c.type);
 
 const percent = c.maxhp ? (c.hp / c.maxhp) * 100 : 0;
+const color = getHealthColor(percent);
 
 let deathUI = '';
 if(c.type==='player' && c.hp===0){
@@ -102,7 +109,7 @@ if(c.type==='player' && c.hp===0){
 
 li.innerHTML=`
   ${c.name} | ${c.hp}/${c.maxhp} HP | AC:${c.ac}<br>
-  <div class='bar'><div class='fill' style='width:${percent}%'></div></div>
+  <div class='bar'><div class='fill' style='width:${percent}%; background:${color}'></div></div>
   <button onclick='changeHP(${i},-1)'>-1</button>
   <button onclick='changeHP(${i},-5)'>-5</button>
   <button onclick='changeHP(${i},+5)'>+5</button>
