@@ -3,47 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <title>Initiative Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+      font-family: 'Cinzel', serif;
+      background: radial-gradient(circle at top, #1b1b1b, #0a0a0a);
+      color: #f5e6c8;
       display: flex;
       justify-content: center;
       padding: 20px;
     }
 
     .container {
-      width: 400px;
-      background: #1e293b;
+      width: 420px;
+      background: #14110f;
+      border: 2px solid #8b6f3d;
       padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.8);
     }
 
     h1 {
       text-align: center;
+      font-family: 'MedievalSharp', cursive;
+      font-size: 28px;
       margin-bottom: 10px;
+      color: #d4af37;
     }
 
     input {
       width: 48%;
       padding: 8px;
       margin: 5px 1%;
-      border-radius: 8px;
-      border: none;
+      border-radius: 6px;
+      border: 1px solid #8b6f3d;
+      background: #1f1a16;
+      color: #f5e6c8;
     }
 
     button {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      background: #6366f1;
-      color: white;
+      border: 1px solid #8b6f3d;
+      border-radius: 8px;
+      background: linear-gradient(#3b2f1c, #2a2115);
+      color: #f5e6c8;
       font-weight: bold;
       cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(#5a472a, #3b2f1c);
     }
 
     ul {
@@ -54,35 +66,47 @@
 
     li {
       padding: 10px;
-      margin-bottom: 5px;
-      background: #334155;
-      border-radius: 10px;
+      margin-bottom: 6px;
+      background: #2a2115;
+      border: 1px solid #8b6f3d;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
     }
 
     .active {
-      background: #22c55e !important;
-      color: black;
+      background: linear-gradient(#d4af37, #b8962e) !important;
+      color: #1a1205;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(212,175,55,0.6);
     }
 
     .round {
       text-align: center;
       margin-top: 10px;
       font-weight: bold;
+      font-size: 18px;
+      color: #d4af37;
+    }
+
+    .tag {
+      font-size: 12px;
+      opacity: 0.8;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Initiative Tracker</h1>
+    <h1>⚔ Initiative ⚔</h1>
 
-    <input id="name" placeholder="Name" />
-    <input id="initiative" type="number" placeholder="Init" />
-    <button onclick="addCharacter()">Add</button>
+    <input id="name" placeholder="Character / Creature" />
+    <input id="initiative" type="number" placeholder="Initiative" />
+    <button onclick="addCharacter()">➕ Add to Battle</button>
 
-    <button onclick="startCombat()">Start Combat</button>
-    <button onclick="nextTurn()">Next Turn</button>
+    <button onclick="startCombat()">🗡 Begin Combat</button>
+    <button onclick="nextTurn()">⏭ Next Turn</button>
 
     <div class="round">Round: <span id="round">1</span></div>
 
@@ -138,7 +162,7 @@
 
       characters.forEach((char, index) => {
         const li = document.createElement('li');
-        li.textContent = `${char.name} (${char.initiative})`;
+        li.innerHTML = `<span>${char.name}</span><span class='tag'>Init: ${char.initiative}</span>`;
 
         if (index === currentIndex) {
           li.classList.add('active');
