@@ -6,19 +6,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
 <style>
 body{font-family:'Cinzel',serif;background:radial-gradient(circle at top,#1b1b1b,#0a0a0a);color:#f5e6c8;display:flex;justify-content:center;padding:20px}
-.container{width:500px;background:#14110f;border:2px solid #8b6f3d;padding:20px;border-radius:12px}
+.container{width:520px;background:#14110f;border:2px solid #8b6f3d;padding:20px;border-radius:12px}
 h1{text-align:center;font-family:'MedievalSharp';color:#d4af37}
 input,select{width:30%;margin:5px 1%;padding:6px;background:#1f1a16;color:#f5e6c8;border:1px solid #8b6f3d}
 button{width:100%;margin-top:8px;padding:8px;background:#2a2115;color:#f5e6c8;border:1px solid #8b6f3d;cursor:pointer}
 ul{list-style:none;padding:0}
-li{margin:6px 0;padding:8px;border:1px solid #8b6f3d;border-radius:8px}
+li{margin:6px 0;padding:10px;border:1px solid #8b6f3d;border-radius:8px}
 .player{background:#1e3a5f}.enemy{background:#5f1e1e}.boss{background:#5a3d00}
 .active{background:#d4af37!important;color:black}
 .dead{opacity:0.5;text-decoration:line-through}
 .stable{opacity:0.7;font-style:italic}
 .bar{height:8px;background:#333;border-radius:4px;margin-top:4px;overflow:hidden}
 .fill{height:100%;transition:0.3s}
-.saves{font-size:12px;margin-top:4px}
+.saves{font-size:12px;margin-top:6px}
+.statuses{margin-top:6px;font-size:11px}
+.tag{display:inline-block;background:#333;margin:2px;padding:2px 6px;border-radius:6px}
 </style>
 </head>
 <body>
@@ -58,7 +60,7 @@ const maxhp=parseInt(document.getElementById('maxhp').value)||hp;
 const ac=parseInt(document.getElementById('ac').value)||0;
 const type=document.getElementById('type').value;
 if(!name||isNaN(initiative))return;
-characters.push({name,initiative,hp,maxhp,ac,type,success:0,fail:0,dead:false,stable:false});
+characters.push({name,initiative,hp,maxhp,ac,type,success:0,fail:0,dead:false,stable:false,statuses:[]});
 renderList();
 }
 
@@ -78,55 +80,45 @@ renderList();
 function updateRound(){document.getElementById('round').textContent=round;}
 
 function changeHP(i, amt){
-let c = characters[i];
-c.hp += amt;
+let c=characters[i];
+c.hp+=amt;
 
-if(c.hp > 0){
-  c.success = 0;
-  c.fail = 0;
-  c.stable = false;
-}
-
-if(c.hp <= 0){
-  c.hp = 0;
-  if(c.type !== 'player') c.dead = true;
-}
-
-if(c.hp > c.maxhp) c.hp = c.maxhp;
+if(c.hp>0){c.success=0;c.fail=0;c.stable=false;}
+if(c.hp<=0){c.hp=0;if(c.type!=='player')c.dead=true;}
+if(c.hp>c.maxhp)c.hp=c.maxhp;
 renderList();
 }
 
 function stabilize(i){
-let c = characters[i];
-c.success = 0;
-c.fail = 0;
-c.hp = 0;
-c.stable = true;
+let c=characters[i];
+c.success=0;c.fail=0;c.hp=0;c.stable=true;
 renderList();
 }
 
-function saveRoll(i, success){
-let c = characters[i];
-if(success) c.success++;
-else c.fail++;
-
-if(c.success >= 3){
-  c.stable = true;
-  c.success = 0;
-  c.fail = 0;
-}
-
-if(c.fail >= 3){
-  c.dead = true;
-}
-
+function saveRoll(i,success){
+let c=characters[i];
+if(success)c.success++;else c.fail++;
+if(c.success>=3){c.stable=true;c.success=0;c.fail=0;}
+if(c.fail>=3){c.dead=true;}
 renderList();
 }
 
-function getHealthColor(percent){
-if(percent > 60) return '#4ade80';
-if(percent > 30) return '#facc15';
-return '#ef4444';
+function addStatus(i){
+let s=prompt("Add status (poisoned, stunned, prone etc):");
+if(!s)return;
+characters[i].statuses.push(s);
+renderList();
+}
+
+function removeStatus(i,idx){
+characters[i].statuses.splice(idx,1);
+renderList();
+}
+
+function getHealthColor(p){
+if(p>60)return'#4ade80';
+if(p>30)return'#facc15';
+return'#ef4444';
 }
 
 function renderList(){
@@ -134,37 +126,45 @@ const list=document.getElementById('list');list.innerHTML='';
 characters.forEach((c,i)=>{
 const li=document.createElement('li');
 li.classList.add(c.type);
-if(c.dead) li.classList.add('dead');
-if(c.stable && !c.dead) li.classList.add('stable');
+if(c.dead)li.classList.add('dead');
+if(c.stable&&!c.dead)li.classList.add('stable');
 
-const percent = c.maxhp ? (c.hp / c.maxhp) * 100 : 0;
-const color = getHealthColor(percent);
+const percent=c.maxhp?(c.hp/c.maxhp)*100:0;
+const color=getHealthColor(percent);
 
-let deathUI = '';
-if(c.type==='player' && c.hp===0 && !c.dead && !c.stable){
-  deathUI = `
-    <div class='saves'>
-      Death Saves ✔ ${c.success} ❌ ${c.fail}<br>
-      <button onclick='saveRoll(${i},true)'>✔ Success</button>
-      <button onclick='saveRoll(${i},false)'>❌ Fail</button>
-      <button onclick='stabilize(${i})'>✨ Stabilize</button>
-    </div>
-  `;
+let deathUI='';
+if(c.type==='player'&&c.hp===0&&!c.dead&&!c.stable){
+deathUI=`
+<div class='saves'>
+Death Saves ✔ ${c.success} ❌ ${c.fail}<br>
+<button onclick='saveRoll(${i},true)'>✔</button>
+<button onclick='saveRoll(${i},false)'>❌</button>
+<button onclick='stabilize(${i})'>✨ Stabilize</button>
+</div>`;
 }
 
-let nameDisplay = c.name;
-if(c.dead) nameDisplay += ' (dead)';
-else if(c.stable) nameDisplay += ' (stable)';
+let statusUI='';
+if(c.statuses.length>0){
+statusUI=`<div class='statuses'>`+
+ c.statuses.map((s,idx)=>`<span class='tag'>${s} <a href='#' onclick='removeStatus(${i},${idx})'>x</a></span>`).join('')+
+`</div>`;
+}
+
+let nameDisplay=c.name;
+if(c.dead)nameDisplay+=' (dead)';
+else if(c.stable)nameDisplay+=' (stable)';
 
 li.innerHTML=`
-  ${nameDisplay} | ${c.hp}/${c.maxhp} HP | AC:${c.ac}<br>
-  <div class='bar'><div class='fill' style='width:${percent}%; background:${color}'></div></div>
-  <button onclick='changeHP(${i},-1)'>-1</button>
-  <button onclick='changeHP(${i},+1)'>+1</button>
-  ${deathUI}
+${nameDisplay} | ${c.hp}/${c.maxhp} HP | AC:${c.ac}<br>
+<div class='bar'><div class='fill' style='width:${percent}%;background:${color}'></div></div>
+<button onclick='changeHP(${i},-1)'>-1</button>
+<button onclick='changeHP(${i},+1)'>+1</button>
+<button onclick='addStatus(${i})'>+Status</button>
+${statusUI}
+${deathUI}
 `;
 
-if(i===currentIndex && !c.dead) li.classList.add('active');
+if(i===currentIndex&&!c.dead)li.classList.add('active');
 list.appendChild(li);
 });
 }
