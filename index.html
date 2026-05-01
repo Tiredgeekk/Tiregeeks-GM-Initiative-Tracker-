@@ -5,172 +5,126 @@
   <title>Initiative Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Cinzel', serif;
-      background: radial-gradient(circle at top, #1b1b1b, #0a0a0a);
-      color: #f5e6c8;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .container {
-      width: 420px;
-      background: #14110f;
-      border: 2px solid #8b6f3d;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(0,0,0,0.8);
-    }
-
-    h1 {
-      text-align: center;
-      font-family: 'MedievalSharp', cursive;
-      font-size: 28px;
-      margin-bottom: 10px;
-      color: #d4af37;
-    }
-
-    input {
-      width: 48%;
-      padding: 8px;
-      margin: 5px 1%;
-      border-radius: 6px;
-      border: 1px solid #8b6f3d;
-      background: #1f1a16;
-      color: #f5e6c8;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: 1px solid #8b6f3d;
-      border-radius: 8px;
-      background: linear-gradient(#3b2f1c, #2a2115);
-      color: #f5e6c8;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      background: linear-gradient(#5a472a, #3b2f1c);
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 15px;
-    }
-
-    li {
-      padding: 10px;
-      margin-bottom: 6px;
-      background: #2a2115;
-      border: 1px solid #8b6f3d;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 15px;
-    }
-
-    .active {
-      background: linear-gradient(#d4af37, #b8962e) !important;
-      color: #1a1205;
-      font-weight: bold;
-      box-shadow: 0 0 10px rgba(212,175,55,0.6);
-    }
-
-    .round {
-      text-align: center;
-      margin-top: 10px;
-      font-weight: bold;
-      font-size: 18px;
-      color: #d4af37;
-    }
-
-    .tag {
-      font-size: 12px;
-      opacity: 0.8;
-    }
+    body {font-family:'Cinzel',serif;background:radial-gradient(circle at top,#1b1b1b,#0a0a0a);color:#f5e6c8;display:flex;justify-content:center;padding:20px}
+    .container{width:460px;background:#14110f;border:2px solid #8b6f3d;padding:20px;border-radius:12px;box-shadow:0 0 25px rgba(0,0,0,.8)}
+    h1{text-align:center;font-family:'MedievalSharp',cursive;font-size:28px;margin-bottom:10px;color:#d4af37}
+    input,select{width:30%;padding:8px;margin:5px 1%;border-radius:6px;border:1px solid #8b6f3d;background:#1f1a16;color:#f5e6c8}
+    button{width:100%;padding:10px;margin-top:10px;border:1px solid #8b6f3d;border-radius:8px;background:linear-gradient(#3b2f1c,#2a2115);color:#f5e6c8;font-weight:bold;cursor:pointer}
+    ul{list-style:none;padding:0;margin-top:15px}
+    li{padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid #8b6f3d}
+    .row{display:flex;justify-content:space-between;align-items:center}
+    .player{background:#1e3a5f}
+    .enemy{background:#5f1e1e}
+    .boss{background:#5a3d00}
+    .active{background:linear-gradient(#d4af37,#b8962e)!important;color:#1a1205;font-weight:bold;box-shadow:0 0 10px rgba(212,175,55,.6)}
+    .round{text-align:center;margin-top:10px;font-weight:bold;font-size:18px;color:#d4af37}
+    .tag{font-size:12px;opacity:.85}
+    .hpbox{display:flex;gap:4px;margin-top:6px}
+    .mini{flex:1;padding:4px;font-size:12px}
+    .saves{font-size:11px;margin-top:4px}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>⚔ Initiative ⚔</h1>
+<div class="container">
+<h1>⚔ Initiative ⚔</h1>
 
-    <input id="name" placeholder="Character / Creature" />
-    <input id="initiative" type="number" placeholder="Initiative" />
-    <button onclick="addCharacter()">➕ Add to Battle</button>
+<input id="name" placeholder="Name" />
+<input id="initiative" type="number" placeholder="Init" />
+<input id="hp" type="number" placeholder="HP" />
+<input id="ac" type="number" placeholder="AC" />
+<select id="type">
+  <option value="player">🛡 Player</option>
+  <option value="enemy">💀 Baddie</option>
+  <option value="boss">👑 Big Bad</option>
+</select>
 
-    <button onclick="startCombat()">🗡 Begin Combat</button>
-    <button onclick="nextTurn()">⏭ Next Turn</button>
+<button onclick="addCharacter()">➕ Add to Battle</button>
+<button onclick="startCombat()">🗡 Begin Combat</button>
+<button onclick="nextTurn()">⏭ Next Turn</button>
 
-    <div class="round">Round: <span id="round">1</span></div>
+<div class="round">Round: <span id="round">1</span></div>
+<ul id="list"></ul>
+</div>
 
-    <ul id="list"></ul>
-  </div>
+<script>
+let characters=[];let currentIndex=0;let round=1;
 
-  <script>
-    let characters = [];
-    let currentIndex = 0;
-    let round = 1;
+function addCharacter(){
+  const name=document.getElementById('name').value;
+  const initiative=parseInt(document.getElementById('initiative').value);
+  const hp=parseInt(document.getElementById('hp').value)||0;
+  const ac=parseInt(document.getElementById('ac').value)||0;
+  const type=document.getElementById('type').value;
+  if(!name||isNaN(initiative))return;
 
-    function addCharacter() {
-      const name = document.getElementById('name').value;
-      const initiative = parseInt(document.getElementById('initiative').value);
+  characters.push({name,initiative,hp,ac,type,success:0,fail:0});
+  renderList();
 
-      if (!name || isNaN(initiative)) return;
+  ['name','initiative','hp','ac'].forEach(id=>document.getElementById(id).value='');
+}
 
-      characters.push({ name, initiative });
-      renderList();
+function startCombat(){
+  characters.sort((a,b)=>b.initiative-a.initiative);
+  currentIndex=0;round=1;updateRound();renderList();
+}
 
-      document.getElementById('name').value = '';
-      document.getElementById('initiative').value = '';
+function nextTurn(){
+  if(characters.length===0)return;
+  currentIndex++;
+  if(currentIndex>=characters.length){currentIndex=0;round++;updateRound();}
+  renderList();
+}
+
+function updateRound(){document.getElementById('round').textContent=round;}
+
+function changeHP(i,amount){
+  characters[i].hp+=amount;
+  if(characters[i].hp<0)characters[i].hp=0;
+  renderList();
+}
+
+function saveRoll(i,success){
+  if(success)characters[i].success++;
+  else characters[i].fail++;
+  renderList();
+}
+
+function renderList(){
+  const list=document.getElementById('list');list.innerHTML='';
+
+  characters.forEach((char,index)=>{
+    const li=document.createElement('li');
+    li.classList.add(char.type);
+
+    let saveUI='';
+    if(char.type==='player' && char.hp===0){
+      saveUI=`<div class='saves'>
+        Death Saves ✔ ${char.success} ❌ ${char.fail}<br>
+        <button class='mini' onclick='saveRoll(${index},true)'>✔</button>
+        <button class='mini' onclick='saveRoll(${index},false)'>❌</button>
+      </div>`;
     }
 
-    function startCombat() {
-      characters.sort((a, b) => b.initiative - a.initiative);
-      currentIndex = 0;
-      round = 1;
-      updateRound();
-      renderList();
-    }
+    li.innerHTML=`
+      <div class='row'>
+        <span>${char.name}</span>
+        <span class='tag'>${char.type==='player'?'🛡':'💀'} Init:${char.initiative}</span>
+      </div>
+      <div class='row'>
+        <span>HP:${char.hp} | AC:${char.ac}</span>
+      </div>
+      <div class='hpbox'>
+        <button class='mini' onclick='changeHP(${index},-1)'>-1</button>
+        <button class='mini' onclick='changeHP(${index},-5)'>-5</button>
+        <button class='mini' onclick='changeHP(${index},+5)'>+5</button>
+      </div>
+      ${saveUI}
+    `;
 
-    function nextTurn() {
-      if (characters.length === 0) return;
-
-      currentIndex++;
-      if (currentIndex >= characters.length) {
-        currentIndex = 0;
-        round++;
-        updateRound();
-      }
-
-      renderList();
-    }
-
-    function updateRound() {
-      document.getElementById('round').textContent = round;
-    }
-
-    function renderList() {
-      const list = document.getElementById('list');
-      list.innerHTML = '';
-
-      characters.forEach((char, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${char.name}</span><span class='tag'>Init: ${char.initiative}</span>`;
-
-        if (index === currentIndex) {
-          li.classList.add('active');
-        }
-
-        list.appendChild(li);
-      });
-    }
-  </script>
+    if(index===currentIndex)li.classList.add('active');
+    list.appendChild(li);
+  });
+}
+</script>
 </body>
 </html>
