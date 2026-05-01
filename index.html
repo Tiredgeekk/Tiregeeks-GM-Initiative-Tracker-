@@ -98,25 +98,44 @@ renderList();
 
 function updateRound(){document.getElementById('round').textContent=round;}
 
+function changeHP(i, amt){
+  characters[i].hp += amt;
+  if(characters[i].hp < 0) characters[i].hp = 0;
+  renderList();
+}
+
 function renderList(){
 const list=document.getElementById('list');list.innerHTML='';
 characters.forEach((c,i)=>{
 const li=document.createElement('li');
 li.classList.add(c.type);
-li.innerHTML=`${c.name} | HP:${c.hp} AC:${c.ac} <br>
-<button onclick='addToBank(${i})'>📌 Keep</button>`;
+li.innerHTML=`
+  ${c.name} | HP:${c.hp} AC:${c.ac} <br>
+  <button onclick='changeHP(${i},-1)'>-1 HP</button>
+  <button onclick='changeHP(${i},-5)'>-5 HP</button>
+  <button onclick='changeHP(${i},+5)'>+5 HP</button>
+  <button onclick='addToBank(${i})'>📌 Keep</button>
+`;
 if(i===currentIndex)li.classList.add('active');
 list.appendChild(li);
 });
 }
 
+function deleteFromBank(i){
+  bank.splice(i,1);
+  saveBank();
+  renderBank();
+}
+
 function renderBank(){
-const list=document.getElementById('bankList');list.innerHTML='';
-bank.forEach((c,i)=>{
-const li=document.createElement('li');
-li.innerHTML=`${c.name} (${c.type}) <button onclick='loadFromBank(${i})'>➕ Add</button>`;
-list.appendChild(li);
-});
+  const list=document.getElementById('bankList');list.innerHTML='';
+  bank.forEach((c,i)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`${c.name} (${c.type}) 
+      <button onclick='loadFromBank(${i})'>➕ Add</button>
+      <button onclick='deleteFromBank(${i})'>🗑 Delete</button>`;
+    list.appendChild(li);
+  });
 }
 
 renderBank();
