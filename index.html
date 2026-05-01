@@ -79,11 +79,26 @@ function updateRound(){document.getElementById('round').textContent=round;}
 function changeHP(i, amt){
 let c = characters[i];
 c.hp += amt;
+
+if(c.hp > 0){
+  c.success = 0;
+  c.fail = 0;
+}
+
 if(c.hp <= 0){
   c.hp = 0;
   if(c.type !== 'player') c.dead = true;
 }
+
 if(c.hp > c.maxhp) c.hp = c.maxhp;
+renderList();
+}
+
+function stabilize(i){
+let c = characters[i];
+c.success = 0;
+c.fail = 0;
+c.hp = 1;
 renderList();
 }
 
@@ -93,8 +108,12 @@ if(success) c.success++;
 else c.fail++;
 
 if(c.success >= 3){
-  // stabilized
-} else if(c.fail >= 3){
+  c.hp = 1;
+  c.success = 0;
+  c.fail = 0;
+}
+
+if(c.fail >= 3){
   c.dead = true;
 }
 
@@ -124,6 +143,7 @@ if(c.type==='player' && c.hp===0 && !c.dead){
       Death Saves ✔ ${c.success} ❌ ${c.fail}<br>
       <button onclick='saveRoll(${i},true)'>✔ Success</button>
       <button onclick='saveRoll(${i},false)'>❌ Fail</button>
+      <button onclick='stabilize(${i})'>✨ Stabilize</button>
     </div>
   `;
 }
