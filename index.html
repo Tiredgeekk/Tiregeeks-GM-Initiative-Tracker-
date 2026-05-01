@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
 <style>
 body{font-family:'Cinzel',serif;background:radial-gradient(circle at top,#1b1b1b,#0a0a0a);color:#f5e6c8;display:flex;justify-content:center;padding:20px}
-.container{width:480px;background:#14110f;border:2px solid #8b6f3d;padding:20px;border-radius:12px}
+.container{width:500px;background:#14110f;border:2px solid #8b6f3d;padding:20px;border-radius:12px}
 h1{text-align:center;font-family:'MedievalSharp';color:#d4af37}
 input,select{width:30%;margin:5px 1%;padding:6px;background:#1f1a16;color:#f5e6c8;border:1px solid #8b6f3d}
 button{width:100%;margin-top:8px;padding:8px;background:#2a2115;color:#f5e6c8;border:1px solid #8b6f3d;cursor:pointer}
@@ -14,8 +14,9 @@ ul{list-style:none;padding:0}
 li{margin:6px 0;padding:8px;border:1px solid #8b6f3d;border-radius:8px}
 .player{background:#1e3a5f}.enemy{background:#5f1e1e}.boss{background:#5a3d00}
 .active{background:#d4af37!important;color:black}
-.small{font-size:11px}
-.bank{margin-top:10px;padding:10px;border:1px dashed #8b6f3d}
+.bar{height:8px;background:#333;border-radius:4px;margin-top:4px;overflow:hidden}
+.fill{height:100%;background:#4ade80}
+.saves{font-size:12px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -25,6 +26,7 @@ li{margin:6px 0;padding:8px;border:1px solid #8b6f3d;border-radius:8px}
 <input id="name" placeholder="Name" />
 <input id="initiative" type="number" placeholder="Init" />
 <input id="hp" type="number" placeholder="HP" />
+<input id="maxhp" type="number" placeholder="Max HP" />
 <input id="ac" type="number" placeholder="AC" />
 <select id="type">
 <option value="player">🛡 Player</option>
@@ -39,69 +41,44 @@ li{margin:6px 0;padding:8px;border:1px solid #8b6f3d;border-radius:8px}
 
 <div>Round: <span id="round">1</span></div>
 <ul id="list"></ul>
-
-<div class="bank">
-<b>📦 Saved Characters</b>
-<ul id="bankList"></ul>
-</div>
 </div>
 
 <script>
 let characters=[];
-let bank=JSON.parse(localStorage.getItem('bank')||'[]');
 let currentIndex=0;
 let round=1;
-
-function saveBank(){localStorage.setItem('bank',JSON.stringify(bank));}
 
 function addCharacter(){
 const name=document.getElementById('name').value;
 const initiative=parseInt(document.getElementById('initiative').value);
 const hp=parseInt(document.getElementById('hp').value)||0;
+const maxhp=parseInt(document.getElementById('maxhp').value)||hp;
 const ac=parseInt(document.getElementById('ac').value)||0;
 const type=document.getElementById('type').value;
 if(!name||isNaN(initiative))return;
-characters.push({name,initiative,hp,ac,type,success:0,fail:0});
+characters.push({name,initiative,hp,maxhp,ac,type,success:0,fail:0});
 renderList();
 }
 
-function addToBank(i){
-bank.push(characters[i]);
-saveBank();
-renderBank();
-}
+function resetCombat(){characters=[];currentIndex=0;round=1;updateRound();renderList();}
 
-function loadFromBank(i){
-characters.push({...bank[i]});
-renderList();
-}
+function startCombat(){characters.sort((a,b)=>b.initiative-a.initiative);currentIndex=0;round=1;updateRound();renderList();}
 
-function resetCombat(){
-characters=[];
-currentIndex=0;
-round=1;
-updateRound();
-renderList();
-}
-
-function startCombat(){
-characters.sort((a,b)=>b.initiative-a.initiative);
-currentIndex=0;round=1;updateRound();renderList();
-}
-
-function nextTurn(){
-if(characters.length===0)return;
-currentIndex++;
-if(currentIndex>=characters.length){currentIndex=0;round++;updateRound();}
-renderList();
-}
+function nextTurn(){if(characters.length===0)return;currentIndex++;if(currentIndex>=characters.length){currentIndex=0;round++;updateRound();}renderList();}
 
 function updateRound(){document.getElementById('round').textContent=round;}
 
 function changeHP(i, amt){
-  characters[i].hp += amt;
-  if(characters[i].hp < 0) characters[i].hp = 0;
-  renderList();
+characters[i].hp += amt;
+if(characters[i].hp < 0) characters[i].hp = 0;
+if(characters[i].hp > characters[i].maxhp) characters[i].hp = characters[i].maxhp;
+renderList();
+}
+
+function saveRoll(i, success){
+if(success) characters[i].success++;
+else characters[i].fail++;
+renderList();
 }
 
 function renderList(){
@@ -109,36 +86,33 @@ const list=document.getElementById('list');list.innerHTML='';
 characters.forEach((c,i)=>{
 const li=document.createElement('li');
 li.classList.add(c.type);
+
+const percent = c.maxhp ? (c.hp / c.maxhp) * 100 : 0;
+
+let deathUI = '';
+if(c.type==='player' && c.hp===0){
+  deathUI = `
+    <div class='saves'>
+      Death Saves ✔ ${c.success} ❌ ${c.fail}<br>
+      <button onclick='saveRoll(${i},true)'>✔ Success</button>
+      <button onclick='saveRoll(${i},false)'>❌ Fail</button>
+    </div>
+  `;
+}
+
 li.innerHTML=`
-  ${c.name} | HP:${c.hp} AC:${c.ac} <br>
-  <button onclick='changeHP(${i},-1)'>-1 HP</button>
-  <button onclick='changeHP(${i},-5)'>-5 HP</button>
-  <button onclick='changeHP(${i},+5)'>+5 HP</button>
-  <button onclick='addToBank(${i})'>📌 Keep</button>
+  ${c.name} | ${c.hp}/${c.maxhp} HP | AC:${c.ac}<br>
+  <div class='bar'><div class='fill' style='width:${percent}%'></div></div>
+  <button onclick='changeHP(${i},-1)'>-1</button>
+  <button onclick='changeHP(${i},-5)'>-5</button>
+  <button onclick='changeHP(${i},+5)'>+5</button>
+  ${deathUI}
 `;
+
 if(i===currentIndex)li.classList.add('active');
 list.appendChild(li);
 });
 }
-
-function deleteFromBank(i){
-  bank.splice(i,1);
-  saveBank();
-  renderBank();
-}
-
-function renderBank(){
-  const list=document.getElementById('bankList');list.innerHTML='';
-  bank.forEach((c,i)=>{
-    const li=document.createElement('li');
-    li.innerHTML=`${c.name} (${c.type}) 
-      <button onclick='loadFromBank(${i})'>➕ Add</button>
-      <button onclick='deleteFromBank(${i})'>🗑 Delete</button>`;
-    list.appendChild(li);
-  });
-}
-
-renderBank();
 </script>
 </body>
 </html>
